@@ -349,7 +349,7 @@ Here’s a screenshot of the mosaic that’s created.
 
 
 
-![Figure 1 – Basic photo mosaic web application](readme_images/09_01.png)
+![Figure 1 – Basic photo mosaic web application](/readme_images/09_01.png)
 
 Now that we have the basic mosaic generating web application, let’s create the concurrent version of it. 
 
