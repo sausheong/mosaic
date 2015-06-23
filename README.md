@@ -575,3 +575,5 @@ I compile and then upload the same target picture again.
 
 ![Figure 5 – Photo mosaic web application with concurrency and 8 CPUs](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09-03.png)
 
+As you can see, the performance has improved 3 times, from 646 milliseconds to 216 milliseconds! And if we compare that with our original photo mosaic web application with 2.25 seconds, that’s a 10 times performance improvement! That is an actual comparison, even though we did not run it with 8 CPUs previously, our original photo mosaic web application is not concurrent and therefore can only use one CPU – giving it 8 CPUs make no difference at all.
+What is also interesting to note is that there is no difference between the original and the concurrent web applications, in terms of the photo mosaic algorithm. In fact, between the two applications, the mosaic.go source file was not modified at all. The only difference is concurrency, and that is a testament to how powerful it is.
