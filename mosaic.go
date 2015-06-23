@@ -9,6 +9,41 @@ import (
 	"os"
 )
 
+// global tiles database
+var TILESDB map[string][3]float64
+
+func cloneTilesDB() map[string][3]float64 {
+	db := make(map[string][3]float64)
+	for k, v := range TILESDB {
+		db[k] = v
+	}
+	return db
+}
+
+// populate a tiles database in memory
+func tilesDB() map[string][3]float64 {
+	fmt.Println("Start populating tiles db ...")
+	db := make(map[string][3]float64)
+	files, _ := ioutil.ReadDir("tiles")
+	for _, f := range files {
+		name := "tiles/" + f.Name()
+		file, err := os.Open(name)
+		if err == nil {
+			img, _, err := image.Decode(file)
+			if err == nil {
+				db[name] = averageColor(img)
+			} else {
+				fmt.Println("error in populating tiles db:", err, name)
+			}
+		} else {
+			fmt.Println("cannot open file", name, "when populating tiles db:", err)
+		}
+		file.Close()
+	}
+	fmt.Println("Finished populating tiles db.")
+	return db
+}
+
 // resize an image by its ratio e.g. ratio 2 means reduce the size by 1/2, 10 means reduce the size by 1/10
 func resize(in image.Image, newWidth int) image.NRGBA {
 	bounds := in.Bounds()
@@ -36,39 +71,6 @@ func averageColor(img image.Image) [3]float64 {
 	}
 	totalPixels := float64(bounds.Max.X * bounds.Max.Y)
 	return [3]float64{r / totalPixels, g / totalPixels, b / totalPixels}
-}
-
-var TILESDB map[string][3]float64
-
-func cloneTilesDB() map[string][3]float64 {
-	db := make(map[string][3]float64)
-	for k, v := range TILESDB {
-		db[k] = v
-	}
-	return db	
-}
-// populate a tiles database in memory
-func tilesDB() map[string][3]float64 {
-	fmt.Println("Start populating tiles db ...")
-	db := make(map[string][3]float64)
-	files, _ := ioutil.ReadDir("tiles")
-	for _, f := range files {
-		name := "tiles/" + f.Name()
-		file, err := os.Open(name)
-		if err == nil {
-			img, _, err := image.Decode(file)
-			if err == nil {
-				db[name] = averageColor(img)
-			} else {
-				fmt.Println("error in populating tiles db:", err, name)
-			}
-		} else {
-			fmt.Println("cannot open file", name, "when populating tiles db:", err)
-		}
-		file.Close()
-	}
-	fmt.Println("Finished populating tiles db.")
-	return db
 }
 
 // find the nearest matching image

@@ -70,7 +70,6 @@ func noConcurrencyHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		"original": originalStr,
 		"mosaic":   mosaic,
 		"duration": fmt.Sprintf("%v ", t1.Sub(t0)),
-		
 	}
 	t, _ := template.ParseFiles("results.html")
 	t.Execute(w, images)

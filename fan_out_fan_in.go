@@ -53,37 +53,37 @@ func cutWithChannelNoEncoding(original image.Image, db *map[string][3]float64, t
 // combine the images and return the encoding string
 func combineImage(r image.Rectangle, c1, c2, c3, c4 <-chan image.Image) <-chan string {
 	c := make(chan string)
-
+	// start a goroutine
 	go func() {
-		newimage := image.NewNRGBA(r)
 		var wg sync.WaitGroup
+		newimage := image.NewNRGBA(r)
 		copy := func(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) {
 			draw.Draw(dst, r, src, sp, draw.Src)
 			wg.Done()
 		}
 		wg.Add(4)
-		for i := 1; i < 5; i++ {
+		var s1, s2, s3, s4 image.Image
+		var ok1, ok2, ok3, ok4 bool
+		for {
 			select {
-			case s1 := <-c1:
+			case s1, ok1 = <-c1:
 				go copy(newimage, s1.Bounds(), s1, image.Point{r.Min.X, r.Min.Y})
-			case s2 := <-c2:
+			case s2, ok2 = <-c2:
 				go copy(newimage, s2.Bounds(), s2, image.Point{r.Max.X / 2, r.Min.Y})
-			case s3 := <-c3:
+			case s3, ok3 = <-c3:
 				go copy(newimage, s3.Bounds(), s3, image.Point{r.Min.X, r.Max.Y / 2})
-			case s4 := <-c4:
+			case s4, ok4 = <-c4:
 				go copy(newimage, s4.Bounds(), s4, image.Point{r.Max.X / 2, r.Max.Y / 2})
-			default:
-				if i > 0 {
-					i--
-				}
 			}
-
+			if ok1 && ok2 && ok3 && ok4 {
+				break
+			}
 		}
+		// wait till all copy goroutines are complete
 		wg.Wait()
 		buf2 := new(bytes.Buffer)
 		jpeg.Encode(buf2, newimage, nil)
 		c <- base64.StdEncoding.EncodeToString(buf2.Bytes())
-		close(c)
 	}()
 	return c
 }
@@ -108,12 +108,13 @@ func fanOutFanInHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	c3 := cutWithChannelNoEncoding(original, &db, tileSize, bounds.Min.X, bounds.Max.Y/2, bounds.Max.X/2, bounds.Max.Y)
 	c4 := cutWithChannelNoEncoding(original, &db, tileSize, bounds.Max.X/2, bounds.Max.Y/2, bounds.Max.X, bounds.Max.Y)
 
+	// fan-in
+	c := combineImage(bounds, c1, c2, c3, c4)
+	
 	buf1 := new(bytes.Buffer)
 	jpeg.Encode(buf1, original, nil)
 	originalStr := base64.StdEncoding.EncodeToString(buf1.Bytes())
-
-	// fan-in
-	c := combineImage(bounds, c1, c2, c3, c4)
+	
 	t1 := time.Now()
 	images := map[string]string{
 		"original": originalStr,

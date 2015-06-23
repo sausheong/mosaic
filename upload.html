@@ -27,6 +27,9 @@
         <h1><i class="fa fa-photo"></i> Mosaic</h1>
         <div class="lead">Create a mosaic version of your image, from a pre-selected directory of images.</div>
 		<p>Select the size of the tiles and choose a JPEG file to convert into a mosaic. Tiles are only used once for the mosaic.</p>
+		
+		<a href="/fetch">Fill up the tiles database ({{ . }})</a>
+		
 		<h3>No concurrency used</h3>
 		
         <form class="form form-inline" method="post" action="/mosaic_no_concurrency" enctype="multipart/form-data">
