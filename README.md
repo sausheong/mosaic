@@ -40,7 +40,7 @@ func averageColor(img image.Image) [3]float64 {
 First is the `averageColor` function, which takes the red, green and blue of each pixel in the image, adds up all the reds, greens and blues and then divides each sum by the total number of pixels in the image. Then we create a 3-tuple (actually a 3 element array) consisting of these numbers. 
 Next, we have the `resize` function. The resize function resizes an image to a new width.
 
-```
+```go
 // resize an image to its new width
 func resize(in image.Image, newWidth int) image.NRGBA {
 	bounds := in.Bounds()
@@ -56,9 +56,10 @@ func resize(in image.Image, newWidth int) image.NRGBA {
 	return *out
 }
 ```
+
 The `tileDB` function creates a database of the tile picture by scanning the directory where the tile pictures are located.
 
-```
+```go
 // populate a tiles database in memory
 func tilesDB() map[string][3]float64 {
 	fmt.Println("Start populating tiles db ...")
@@ -86,7 +87,7 @@ func tilesDB() map[string][3]float64 {
 
 The tile database is a map with a string as the key a 3-tuple (in this case a 3-element array) as the value. I open up each image file in the directory and then get the average color of the image to create an entry in the map. The tile database is used to find the correct tile picture in the tile picture directory. It is passed into the nearest function, along with the target color 3-tuple.
 
-```
+```go
 // find the nearest matching image
 func nearest(target [3]float64, db *map[string][3]float64) string {
 	var filename string
@@ -104,7 +105,7 @@ func nearest(target [3]float64, db *map[string][3]float64) string {
 
 Each entry in the tile database is compared with the target color and the entry with the smallest distance is returned as the nearest tile, and also removed from the tile database. The distance function calculates the Euclidean distance between two 3-tuples.
 
-```
+```go
 // find the Eucleadian distance between 2 points
 func distance(p1 [3]float64, p2 [3]float64) float64 {
 	return math.Sqrt(sq(p2[0]-p1[0]) + sq(p2[1]-p1[1]) + sq(p2[2]-p1[2]))
@@ -118,7 +119,7 @@ func sq(n float64) float64 {
 
 Finally, scanning and loading the tile database every time a photo mosaic is created can be pretty cumbersome. I want to do that only once, and clone the tile database every time a photo mosaic is created. The source tile database, TILEDB is then created as a global variable and populated on the start of the web application.
 
-```
+```go
 var TILESDB map[string][3]float64
 
 // clone the tile database each time we generate the photo mosaic
@@ -134,7 +135,7 @@ func cloneTilesDB() map[string][3]float64 {
 
 With the mosaic-generating functions in place, I can start writing my web application. The web application is placed in a source code file named main.go.
 
-```
+```go
 package main
 
 import (
@@ -236,7 +237,7 @@ func mosaic(w http.ResponseWriter, r *http.Request) {
 
 The main logic for creating the photo mosaic is in the mosaic function, which is a handler function. First, I get the uploaded file and also the tile size from the form.
 
-```
+```go
 // get the content from the POSTed form
 r.ParseMultipartForm(10485760) // max body in memory is 10MB
 file, _, _ := r.FormFile("image")
@@ -246,7 +247,7 @@ tileSize, _ := strconv.Atoi(r.FormValue("tile_size"))
 
 Next, I decode the uploaded target image, and also create a new photo mosaic image.
 
-```
+```go
 // decode and get original image
 original, _, _ := image.Decode(file)
 bounds := original.Bounds()
@@ -256,7 +257,7 @@ newimage := image.NewNRGBA(image.Rect(bounds.Min.X, bounds.Min.X, bounds.Max.X, 
 
 I also clone the source tile database, and set up the source point for each tile (this is needed by the image/draw package later).
 
-```
+```go
 // build up the tiles database
 db := cloneTilesDB()
 // source point for each tile, which starts with 0, 0 of each tile
@@ -265,7 +266,7 @@ sp := image.Point{0, 0}
 
 I am now ready to iterate through each tile-sized piece of the target image.
 
-```
+```go
 for y := bounds.Min.Y; y < bounds.Max.Y; y = y + tileSize {
 	for x := bounds.Min.X; x < bounds.Max.X; x = x + tileSize {
 		// use the top left most pixel color as the average color
@@ -298,7 +299,7 @@ For every piece, I pick the top left pixel and assume that’s the average color
 
 Once the photo mosaic is created, I encode it into JPEG format, then encode it once again into a base64 string. 
 
-```
+```go
 	buf1 := new(bytes.Buffer)
 	jpeg.Encode(buf1, original, nil)
 	originalStr := base64.StdEncoding.EncodeToString(buf1.Bytes())
@@ -349,7 +350,7 @@ Here’s a screenshot of the mosaic that’s created.
 
 
 
-![Figure 1 – Basic photo mosaic web application](/readme_images/09_01.png?raw=true)
+![Figure 1 – Basic photo mosaic web application](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09_01.png)
 
 Now that we have the basic mosaic generating web application, let’s create the concurrent version of it. 
 
@@ -363,14 +364,14 @@ One of the more frequent use of concurrency is to improve performance. The web a
 
 From a diagrammatic point of view:
 
-![Figure 2 – Concurrency algorithm](/readme_images/09_05.png?raw=true)
+![Figure 2 – Concurrency algorithm](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09_05.png)
 
 A word of caution – this is not the only way that performance can be improved or concurrency can be achieved, but only one relatively simple and straightforward way.
 
 The only function that changes in this is the mosaic handler function. In the earlier program, I had a single handler function that created the photo mosaic. In the concurrent version of the photo mosaic web application, I need to break up that function into two separate functions, called cut and combine respectively. Both the cut and the combine functions are called from the mosaic handler function.
 
 
-```
+```go
 func mosaic(w http.ResponseWriter, r *http.Request) {
 	t0 := time.Now()
 	r.ParseMultipartForm(10485760) // max body in memory is 10MB
@@ -408,11 +409,11 @@ func mosaic(w http.ResponseWriter, r *http.Request) {
 
 Cutting up the image is handled by the cut function, in what is known as the fan-out pattern. 
 
-![Figure 3 – Splitting the target picture into 4 quadrants](/readme_images/09_04.png?raw=true)
+![Figure 3 – Splitting the target picture into 4 quadrants](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09_04.png)
 
 The original image is cut up into 4 quadrants to be processed separately. 
 
-```
+```go
 c1 := cut(original, &db, tileSize, bounds.Min.X, bounds.Min.Y, bounds.Max.X/2, bounds.Max.Y/2)
 c2 := cut(original, &db, tileSize, bounds.Max.X/2, bounds.Min.Y, bounds.Max.X, bounds.Max.Y/2)
 c3 := cut(original, &db, tileSize, bounds.Min.X, bounds.Max.Y/2, bounds.Max.X/2, bounds.Max.Y)
@@ -421,7 +422,7 @@ c4 := cut(original, &db, tileSize, bounds.Max.X/2, bounds.Max.Y/2, bounds.Max.X,
 
 You might notice that these are regular functions and not goroutines, how can they run concurrently? The answer is because the cut function creates an anonymous goroutine and returns a channel.
 
-```
+```go
 func cut(original image.Image, db *map[string][3]float64, tileSize, x1, y1, x2, y2 int) <-chan image.Image {
 	c := make(chan image.Image)
 	sp := image.Point{0, 0}
@@ -459,7 +460,7 @@ The logic is exactly the same as in the original photo mosaic web application. I
 
 I’ve cut the original image into 4 separate pieces and convert each piece into a part of a photo mosaic. It’s time to put them together again, using what is commonly known as the fan-in pattern, in the combine function.
 
-```
+```go
 func combine(r image.Rectangle, c1, c2, c3, c4 <-chan image.Image) 
 <-chan string {
 	c := make(chan string)
@@ -510,7 +511,7 @@ In the anonymous goroutine, I create another anonymous function and assign it to
 
 Remember that the input to the combine function includes the 4 channels coming from the cut function containing the photo mosaic segments, and I don’t know when the channels actually have segments. I could try to receive each one of those channels in sequence, but that wouldn’t be very concurrent. What I would like to do is to start processing whichever segment that comes first and the select statement fits the bill nicely.
 
-```
+```go
 var s1, s2, s3, s4 image.Image
 var ok1, ok2, ok3, ok4 bool
 for  {
@@ -541,14 +542,14 @@ Moving on, and referring to the WaitGroup wg I used earlier, remember that even 
 Here’s a screenshot of the results, using the same target picture and tile pictures.
 
 
-![Figure 4 – Photo mosaic web application with concurrency](/readme_images/09_02.png?raw=true)
+![Figure 4 – Photo mosaic web application with concurrency](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09_02.png)
 
 If you’re sharp-eyed, you might see the slight differences in the photo mosaic that’s generated. The final photo mosaic is assembled from 4 separate pieces and the algorithm doesn’t smoothen out the rough edges. However, you can see the difference in performance – where the basic photo mosaic web application took 2.25 seconds, this one using concurrency only takes almost a quarter of that time, around 646 miliseconds.
 
 For readers who are really observant you might realize that both web applications are actually running on just one CPU! As mentioned earlier in this chapter, concurrency is not parallelism – what I’ve shown you is how we can take a simple algorithm and break it down into a concurrent one, with no parallelism involved! None of the goroutines are actually running in parallel (since there is only one CPU) even though they are running independently.
 Of course it would be cruel not to go the last step and show how it actually runs using multiple CPUs. To do this, I simply need to set the GOMAXPROCS in the runtime to the actual number of CPUs running on my system. The changes are in the main.go file. Remember to import the runtime package before making the change below.
 
-```
+```go
 func main() {
 	// this prints out the number of CPUs in my system
 	fmt.Println("Number of CPUs:", runtime.NumCPU())
@@ -572,5 +573,5 @@ func main() {
 I compile and then upload the same target picture again.
 
 
-![Figure 5 – Photo mosaic web application with concurrency and 8 CPUs](/readme_images/09_03.png?raw=true)
+![Figure 5 – Photo mosaic web application with concurrency and 8 CPUs](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09_03.png)
 
