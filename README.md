@@ -350,7 +350,7 @@ Here’s a screenshot of the mosaic that’s created.
 
 
 
-![Figure 1 – Basic photo mosaic web application](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09_01.png)
+![Figure 1 – Basic photo mosaic web application](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09-01.png)
 
 Now that we have the basic mosaic generating web application, let’s create the concurrent version of it. 
 
@@ -364,7 +364,7 @@ One of the more frequent use of concurrency is to improve performance. The web a
 
 From a diagrammatic point of view:
 
-![Figure 2 – Concurrency algorithm](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09_05.png)
+![Figure 2 – Concurrency algorithm](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09-05.png)
 
 A word of caution – this is not the only way that performance can be improved or concurrency can be achieved, but only one relatively simple and straightforward way.
 
@@ -409,7 +409,7 @@ func mosaic(w http.ResponseWriter, r *http.Request) {
 
 Cutting up the image is handled by the cut function, in what is known as the fan-out pattern. 
 
-![Figure 3 – Splitting the target picture into 4 quadrants](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09_04.png)
+![Figure 3 – Splitting the target picture into 4 quadrants](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09-04.png)
 
 The original image is cut up into 4 quadrants to be processed separately. 
 
@@ -542,7 +542,7 @@ Moving on, and referring to the WaitGroup wg I used earlier, remember that even 
 Here’s a screenshot of the results, using the same target picture and tile pictures.
 
 
-![Figure 4 – Photo mosaic web application with concurrency](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09_02.png)
+![Figure 4 – Photo mosaic web application with concurrency](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09-02.png)
 
 If you’re sharp-eyed, you might see the slight differences in the photo mosaic that’s generated. The final photo mosaic is assembled from 4 separate pieces and the algorithm doesn’t smoothen out the rough edges. However, you can see the difference in performance – where the basic photo mosaic web application took 2.25 seconds, this one using concurrency only takes almost a quarter of that time, around 646 miliseconds.
 
@@ -573,5 +573,5 @@ func main() {
 I compile and then upload the same target picture again.
 
 
-![Figure 5 – Photo mosaic web application with concurrency and 8 CPUs](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09_03.png)
+![Figure 5 – Photo mosaic web application with concurrency and 8 CPUs](https://raw.githubusercontent.com/sausheong/mosaic/master/readme_images/09-03.png)
 
