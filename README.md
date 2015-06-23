@@ -1,8 +1,8 @@
 # Mosaic
 
-A few months ago, my good friend Satish Talim had this great idea to create a series of Go challenges to help Go programmers to up their game. The idea was to create a programming problem every month (or so) that presents a fresh and interesting challenge to the Go community. There would be prizes to win, but more importantly, it was a community effort to help each other to improve ourselves. Satish asked me to write a challenge, and I readily agreed to create challenge #3.
+A few months ago, my good friend Satish Talim had this great idea to create a series of Go challenges to help Go programmers to up their game. The idea was to create a programming problem every month (or so) that presents a fresh and interesting challenge to the Go community. There would be prizes to win, but more importantly, it was a community effort to help each other to improve ourselves. Satish asked me to write a challenge, and I readily agreed to create [challenge #3](http://golang-challenge.com/go-challenge3/).
 
-Being a web application programmer for most of my career, it was the most natural thing to do to create a challenge that's based on creating a web application. And some time back, I wrote a mosaic-generating script using Ruby during a hackathon, so I thought to marry both ideas together to create a challenge to create photo mosaic web app.
+Being a web application programmer for most of my career, it was the most natural thing to do to create a challenge that's based on creating a web application. And some time back, [I wrote a mosaic-generating script using Ruby during a hackathon](https://developer.yahoo.com/blogs/ydn/creating-photo-mosaics-yahoo-boss-image-search-7453.html), so I thought to marry both ideas together to create a challenge to create photo mosaic web app.
 
 To be honest, at the time of issuing the challenge I haven't actually written the photo mosaic web app yet. In fact, I only started writing it after the challenge was over. It took me the better part of 2 days to complete the photo mosaic web app. But I wasn't finished yet, and I wanted to go a bit further and use Go's concurrency to improve its performance. This blog post is the results of what I did.
 
@@ -349,7 +349,7 @@ Here’s a screenshot of the mosaic that’s created.
 
 
 
-![Figure 1 – Basic photo mosaic web application](/readme_images/09_01.png)
+![Figure 1 – Basic photo mosaic web application](/readme_images/09_01.png?raw=true)
 
 Now that we have the basic mosaic generating web application, let’s create the concurrent version of it. 
 
@@ -363,7 +363,7 @@ One of the more frequent use of concurrency is to improve performance. The web a
 
 From a diagrammatic point of view:
 
-![Figure 2 – Concurrency algorithm](readme_images/09_05.png)
+![Figure 2 – Concurrency algorithm](/readme_images/09_05.png?raw=true)
 
 A word of caution – this is not the only way that performance can be improved or concurrency can be achieved, but only one relatively simple and straightforward way.
 
@@ -408,7 +408,7 @@ func mosaic(w http.ResponseWriter, r *http.Request) {
 
 Cutting up the image is handled by the cut function, in what is known as the fan-out pattern. 
 
-![Figure 3 – Splitting the target picture into 4 quadrants](readme_images/09_04.png)
+![Figure 3 – Splitting the target picture into 4 quadrants](/readme_images/09_04.png?raw=true)
 
 The original image is cut up into 4 quadrants to be processed separately. 
 
@@ -541,7 +541,7 @@ Moving on, and referring to the WaitGroup wg I used earlier, remember that even 
 Here’s a screenshot of the results, using the same target picture and tile pictures.
 
 
-![Figure 4 – Photo mosaic web application with concurrency](readme_images/09_02.png)
+![Figure 4 – Photo mosaic web application with concurrency](/readme_images/09_02.png?raw=true)
 
 If you’re sharp-eyed, you might see the slight differences in the photo mosaic that’s generated. The final photo mosaic is assembled from 4 separate pieces and the algorithm doesn’t smoothen out the rough edges. However, you can see the difference in performance – where the basic photo mosaic web application took 2.25 seconds, this one using concurrency only takes almost a quarter of that time, around 646 miliseconds.
 
@@ -572,5 +572,5 @@ func main() {
 I compile and then upload the same target picture again.
 
 
-![Figure 5 – Photo mosaic web application with concurrency and 8 CPUs](readme_images/09_03.png)
+![Figure 5 – Photo mosaic web application with concurrency and 8 CPUs](/readme_images/09_03.png?raw=true)
 
