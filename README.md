@@ -4,7 +4,9 @@ A few months ago, my good friend Satish Talim had this great idea to create a se
 
 Being a web application programmer for most of my career, it was the most natural thing to do to create a challenge that's based on creating a web application. And some time back, [I wrote a mosaic-generating script using Ruby during a hackathon](https://developer.yahoo.com/blogs/ydn/creating-photo-mosaics-yahoo-boss-image-search-7453.html), so I thought to marry both ideas together to create a challenge to create photo mosaic web app.
 
-To be honest, at the time of issuing the challenge I haven't actually written the photo mosaic web app yet. In fact, I only started writing it after the challenge was over. It took me the better part of 2 days to complete the photo mosaic web app. But I wasn't finished yet, and I wanted to go a bit further and use Go's concurrency to improve its performance. This blog post is the results of what I did.
+To be honest, at the time of issuing the challenge I haven't actually written the photo mosaic web app yet. In fact, I only started writing it after the challenge was over. It took me the better part of 2 days to complete the photo mosaic web app. But I wasn't finished yet, and I wanted to go a bit further and use Go's concurrency to improve its performance. What I'm describing below is what I did.
+
+The live site is found at http://mosaic.saush.com. It is deployed using [Docker](https://www.docker.com) to Digital Ocean, through [Tutum](https://www.tutum.co). The performance on the live site is not as good as described here, as it is only running on 1 CPU with 512MB.
 
 ## Creating the photo mosaic
 A photographic mosaic, or a photo mosaic is a picture (usually a photograph) that has been divided into (usually equal sized) rectangular sections, each of which is replaced with another picture (called a tile picture). If we view it from far away or if you squint at it, then the original picture can be seen. If we look closer though, we will see that the picture is in fact made up of many hundreds or thousands of smaller tile pictures.
